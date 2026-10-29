@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#090d1a">
+<title>Les Cendres d’Azura — Version 21 · Colosse équilibré</title>
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#070a13;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;touch-action:none}
+#game{display:block;width:100vw;height:100dvh;background:#090d1a;touch-action:none}
+.hud{position:fixed;inset:0;pointer-events:none;color:#f5f2ff;text-shadow:0 2px 8px #000}
+.top{position:absolute;left:12px;right:12px;top:max(10px,env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.brand{font-weight:900;letter-spacing:.13em;font-size:clamp(11px,3vw,15px);color:#f3d8a0}
+.sub{font-size:10px;letter-spacing:.2em;color:#a8b6d7;margin-top:2px}
+.panel{background:linear-gradient(135deg,#111a30dd,#080d1ddd);border:1px solid #8b9dc455;border-radius:12px;padding:8px 10px;box-shadow:0 0 18px #080b16aa}
+.stat{font-size:11px;color:#b7c5e6;margin-bottom:5px}
+.bar{width:clamp(95px,28vw,150px);height:8px;background:#242b40;border-radius:20px;overflow:hidden;border:1px solid #ffffff22}
+#hpbar{height:100%;width:100%;background:linear-gradient(90deg,#ff4b68,#ffb36b);box-shadow:0 0 12px #ff4b68}
+#enemyCount{font-weight:800;color:#ffd68b;font-size:12px}
+.bottomHint{position:absolute;left:50%;bottom:150px;transform:translateX(-50%);font-size:10px;letter-spacing:.16em;color:#a8b8d8;white-space:nowrap;opacity:.85}
+.controls{position:fixed;z-index:30;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 10px);display:none;justify-content:space-between;align-items:flex-end;padding:0 14px;pointer-events:none;max-width:100vw}
+.joystick{width:124px;height:124px;border:2px solid #a8c5ff66;border-radius:50%;background:radial-gradient(circle,#243654aa,#0b1428dd);box-shadow:0 5px 18px #0008,inset 0 0 18px #80b7ff22;pointer-events:auto;touch-action:none;position:relative;display:flex;align-items:center;justify-content:center;user-select:none}
+.joy-ring{position:absolute;inset:14px;border:1px solid #a8c5ff30;border-radius:50%;pointer-events:none}
+.joy-knob{width:48px;height:48px;border:2px solid #d9edffbb;border-radius:50%;background:radial-gradient(circle at 35% 25%,#7ba9dc,#233e67 70%);box-shadow:0 0 18px #7fb6ff55;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none}
+.action{border:1px solid #a8c5ff55;color:#eef5ff;background:linear-gradient(145deg,#253858dd,#10192ddd);box-shadow:0 5px 16px #0008,inset 0 0 12px #80b7ff18;border-radius:50%;font-weight:900;font-size:12px;touch-action:none;user-select:none}
+.action:active,.pressed{background:linear-gradient(145deg,#4771a6,#172641);box-shadow:0 0 18px #7fb6ff55,inset 0 0 14px #fff2}
+.actions{display:flex;align-items:end;gap:10px;pointer-events:auto}
+.action{border-radius:50%;width:68px;height:68px;font-size:12px;letter-spacing:.05em}
+#attack{border-color:#ffb45c99;background:radial-gradient(circle at 35% 25%,#9a542d,#401d29);box-shadow:0 0 20px #ff7d4655}
+#dash{width:54px;height:54px;background:radial-gradient(circle at 35% 25%,#367c8b,#142c4c);border-color:#7eeeff77}
+.overlay{position:fixed;z-index:50;inset:0;display:flex;align-items:center;justify-content:center;background:#050914b8;backdrop-filter:blur(5px);padding:22px;color:white}
+.card{max-width:360px;width:100%;text-align:center;border:1px solid #e5c48d66;border-radius:20px;padding:24px 20px;background:linear-gradient(145deg,#17213aef,#080d1aef);box-shadow:0 0 45px #000b}
+.card h1{font-size:clamp(22px,6vw,32px);line-height:1.1;margin:0 0 10px;color:#f6d69a;letter-spacing:.04em}
+.card p{font-size:13px;line-height:1.55;color:#c4cde1;margin:10px 0 18px}
+.card button{position:relative;z-index:60;pointer-events:auto;touch-action:manipulation;cursor:pointer;border:0;border-radius:12px;padding:13px 20px;background:linear-gradient(90deg,#f1bb6a,#e77b50);color:#211522;font-weight:900;font-size:14px}
+.hidden{display:none}
+@media (max-height:560px){#advStart h2{font-size:20px;margin-bottom:6px}#advStart p{font-size:12px;margin:6px 0 10px}#advStart .advCard>div{font-size:25px!important;margin-bottom:3px!important}#advStart button{padding:10px 14px;font-size:13px}.joystick{width:88px;height:88px}.joy-knob{width:36px;height:36px}.action{width:54px;height:54px}.bottomHint{bottom:120px}#gearPanel{top:54px;width:min(210px,66vw);font-size:9px;padding:5px 7px}.controls{padding:0 10px}.actions{gap:6px}}
+
+#adventurePanel{position:absolute;left:16px;right:16px;top:112px;z-index:8;padding:12px 14px;border:1px solid rgba(155,205,255,.42);border-radius:16px;background:rgba(9,18,39,.88);color:#e9f2ff;display:none}
+#adventurePanel .advTitle{font-weight:800;letter-spacing:.08em;color:#ffd98c;font-size:13px}
+#adventurePanel .advRow{display:flex;justify-content:space-between;gap:8px;font-size:12px;margin-top:6px;color:#b8c8e5}
+#adventurePanel .advBar{height:5px;background:#28334c;border-radius:8px;overflow:hidden;margin-top:6px}
+#adventurePanel .advFill{height:100%;width:0;background:linear-gradient(90deg,#63e9ff,#ffc16b);transition:width .15s}
+
+#advStart{position:fixed;inset:0;z-index:45;display:flex;align-items:center;justify-content:center;background:rgba(5,10,25,.96);padding:max(10px,env(safe-area-inset-top)) 14px max(10px,env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain}
+#advStart .advCard{max-width:440px;width:100%;max-height:100%;overflow-y:auto;padding:clamp(12px,3vh,24px) 16px;border:1px solid rgba(255,210,130,.45);border-radius:24px;background:linear-gradient(145deg,#111d38,#080e20);color:#edf3ff;text-align:center}
+#advStart h2{color:#ffda91;margin:0 0 10px;font-size:25px}
+#advStart p{color:#bdcbe4;line-height:1.5;font-size:14px}
+#advStart button{border:0;border-radius:14px;padding:14px 22px;background:linear-gradient(100deg,#ffd17a,#ef8155);color:#261729;font-weight:900;font-size:15px}
+
+
+#gearPanel{position:fixed;left:7px;right:auto;top:91px;bottom:auto;width:min(190px,62vw);z-index:35;display:none;padding:5px 6px;border:1px solid rgba(255,211,126,.42);border-radius:11px;background:rgba(8,15,32,.94);color:#f1f5ff;font-size:9px;pointer-events:auto;box-shadow:0 4px 18px #0008}
+#gearPanel .gearTop{display:flex;justify-content:space-between;gap:8px;font-weight:800;color:#ffdc93}
+#gearPanel .gearSub{margin-top:3px;color:#bdcbe4;font-size:10px}
+#gearToast,#advToast{position:fixed;left:50%;right:auto;top:72px;transform:translateX(-50%);width:min(86vw,340px);z-index:42;text-align:center;color:#ffe5a4;font-weight:900;font-size:clamp(10px,2.6vw,12px);line-height:1.2;letter-spacing:.01em;text-shadow:0 2px 8px #000;background:rgba(7,12,26,.88);border:1px solid rgba(255,211,126,.4);border-radius:10px;padding:6px 9px;pointer-events:none;overflow-wrap:anywhere;box-shadow:0 4px 14px #0007}
+
+</style>
+</head>
+<body>
+
+<button id="gearToggle" type="button" aria-label="Ouvrir l’équipement" title="Équipement" style="position:fixed;left:7px;top:56px;z-index:34;border:1px solid #e8c57d;border-radius:50%;width:30px;height:30px;padding:0;background:#101a30ee;color:#ffe5a4;font-size:15px;font-weight:800;pointer-events:auto">⚔</button>
+<div id="gearPanel">
+ <div class="gearTop"><span>✦ ÉQUIPEMENT D’AZURA</span><span id="coinCount">0 pièces</span></div>
+ <div class="gearSub" id="gearStatus">Épée usée · Armure de novice</div><button id="upgradeArmorBtn" type="button" style="margin-top:3px;border:1px solid #e8c57d;border-radius:6px;padding:3px 5px;background:#26344f;color:#ffe5a4;font-weight:800;font-size:9px;pointer-events:auto">ARMURE + · 25 PIÈCES</button>
+</div>
+<div id="gearToast"></div>
+
+
+<div id="adventurePanel">
+ <div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><div class="advTitle">NIVEAU 1 · LES RUINES OUBLIÉES</div><div id="advTimer" style="font-size:12px;font-weight:900;color:#8ff7ff">⏱ 00:00</div></div>
+ <div class="advRow"><span id="advObjective">Trouve le coffre puis rejoins la porte</span><span id="advProgress">0 / 3</span></div>
+ <div class="advBar"><div id="advFill" class="advFill"></div></div>
+</div>
+<div id="advToast"></div>
+<button id="onlineToggle" type="button" aria-label="Ouvrir le duel en ligne" style="position:fixed;right:10px;top:174px;z-index:30;border:1px solid #ff9b78;border-radius:10px;padding:8px 10px;background:#151c31;color:#ffe1d4;font-weight:800">⚔ DUEL EN LIGNE</button>
+<div id="onlinePanel" style="display:none;position:fixed;z-index:60;left:50%;top:50%;transform:translate(-50%,-50%);width:min(88vw,360px);padding:18px;border:1px solid #ff9b78;border-radius:16px;background:#101a30;color:#f4f1ff;box-shadow:0 12px 40px #000b;font:14px system-ui"><h2 style="margin:0 0 8px;color:#ffe1d4">⚔ DUEL EN LIGNE</h2><p style="line-height:1.45">Le mode duel est en préparation. Pour jouer avec une autre personne sur Internet, il faut encore connecter ce jeu à un serveur partagé. Cette version ne connecte pas encore deux téléphones et ne crée pas de vraie salle en ligne.</p><p style="font-size:12px;color:#b7c4df">La prochaine étape sera d’ajouter des salles privées avec un code, puis la synchronisation des deux chevaliers.</p><button id="onlineClose" type="button" style="border:1px solid #8ff7ff;border-radius:8px;padding:9px 14px;background:#26344f;color:#e8fbff;font-weight:800">RETOUR AU JEU</button></div>
+<button id="tiltToggle" type="button" aria-label="Activer les commandes par inclinaison" style="position:fixed;right:10px;top:126px;z-index:30;border:1px solid #b8a0ff;border-radius:10px;padding:8px 10px;background:#151c31;color:#eee8ff;font-weight:800">📱 INCLINAISON : OFF</button>
+<button id="musicToggle" type="button" aria-label="Activer ou couper la musique" style="position:fixed;right:10px;top:78px;z-index:30;border:1px solid #8ff7ff;border-radius:10px;padding:8px 10px;background:#151c31;color:#e8fbff;font-weight:800">♫ MUSIQUE : ON</button>
+<div id="creatorCredit" style="position:fixed;bottom:4px;left:8px;z-index:5;color:#d8c89a;font:10px system-ui;opacity:.78;pointer-events:none">Créé par @Basse2.0</div>
+<div id="advStart"><div class="advCard">
+ <div style="font-size:34px;margin-bottom:8px">⚔️ ✦ 🏛️</div>
+ <h2>LES RUINES OUBLIÉES</h2>
+ <p>Niveau 1 — Explore les ruines, ouvre le coffre, évite les pièges, élimine les sentinelles et atteins la porte ancienne.</p><p style="font-size:12px;color:#8ff7ff">Sauvegarde automatique des pièces et de l’équipement sur cet appareil.</p>
+ <p style="font-size:12px">Tu peux tourner ton téléphone à l’horizontale manuellement pour jouer plus confortablement. Joystick pour te déplacer, ATTAQUE pour combattre et ESQUIVE pour éviter les dangers.</p>
+ <button id="advBegin" type="button">COMMENCER L’AVENTURE</button>
+</div></div>
+
+<canvas id="game" aria-label="Jeu Les Cendres d’Azura"></canvas>
+<div class="hud">
+  <div class="top">
+    <div><div class="brand">LES CENDRES D’AZURA</div><div class="sub">ÉPREUVE DES RUINES · COLOSSE GÉANT</div></div>
+    <div class="panel">
+      <div class="stat">VITALITÉ</div><div class="bar"><div id="hpbar"></div></div>
+      <div class="stat" style="margin:6px 0 0"><span id="countLabel">ENNEMIS RESTANTS :</span> <span id="enemyCount">3</span></div>
+      <div id="bossPanel" style="display:none;margin-top:8px"><div class="stat" style="color:#ff9b78;font-weight:800">LE COLOSSE CENDRÉ</div><div class="bar"><div id="bossbar" style="width:100%;background:linear-gradient(90deg,#ff4d5e,#ffbd65)"></div></div></div>
+    </div>
+  </div>
+  <div class="bottomHint" id="hint">ÉLIMINE LES SENTINELLES</div>
+</div>
+<div class="controls">
+  <div class="joystick" id="joystick" role="application" aria-label="Joystick tactile pour déplacer le chevalier">
+    <div class="joy-ring"></div><div class="joy-knob" id="joyKnob"></div>
+  </div>
+  <div class="actions">
+    <button class="action" id="dash">ESQUIVE</button>
+    <button class="action" id="attack">ATTAQUE</button>
+  </div>
+</div>
+<div class="overlay" id="intro"><div class="card">
+  <h1>LES CENDRES<br>D’AZURA</h1>
+  <p>Dans les ruines d’un ancien sanctuaire, trois sentinelles gardent la braise sacrée.<br><br><b>Déplace-toi</b> avec le joystick, <b>attaque</b> au bon moment et esquive les ennemis.</p>
+  <button id="start">ENTRER DANS LES RUINES</button>
+</div></div>
+<div class="overlay hidden" id="end"><div class="card">
+  <h1 id="endTitle">VICTOIRE</h1><p id="endText">Les sentinelles sont tombées.</p>
+  <button id="restart">REJOUER</button>
+</div></div>
+<script>
+(()=> {
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+// Sons générés directement par le navigateur : aucun fichier audio à télécharger.
+let azAudio=null, speechReady=true;
+function playSfx(kind){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;if(!azAudio)azAudio=new AC();if(azAudio.state==='suspended')azAudio.resume();const now=azAudio.currentTime;const presets={swing:[190,95,.11,'sawtooth'],hit:[115,55,.13,'square'],dash:[330,620,.10,'triangle'],chest:[440,880,.24,'sine'],boss:[95,42,.42,'sawtooth'],win:[520,780,.34,'triangle'],hurt:[160,70,.18,'square']};const q=presets[kind]||presets.hit;const o=azAudio.createOscillator(),g=azAudio.createGain();o.type=q[3];o.frequency.setValueAtTime(q[0],now);o.frequency.exponentialRampToValueAtTime(Math.max(35,q[1]),now+q[2]);g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(.13,now+.012);g.gain.exponentialRampToValueAtTime(.0001,now+q[2]);o.connect(g);g.connect(azAudio.destination);o.start(now);o.stop(now+q[2]+.02);}catch(e){}}
+let musicEnabled=true, musicTimer=null, musicStep=0;
+function musicNote(freq,duration,volume=.025){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;if(!azAudio)azAudio=new AC();if(azAudio.state==='suspended')azAudio.resume();const now=azAudio.currentTime,o=azAudio.createOscillator(),g=azAudio.createGain();o.type='triangle';o.frequency.setValueAtTime(freq,now);g.gain.setValueAtTime(.0001,now);g.gain.linearRampToValueAtTime(volume,now+.06);g.gain.exponentialRampToValueAtTime(.0001,now+duration);o.connect(g);g.connect(azAudio.destination);o.start(now);o.stop(now+duration+.03);}catch(e){}}
+function startMusic(){if(!musicEnabled||musicTimer)return;try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;if(!azAudio)azAudio=new AC();if(azAudio.state==='suspended')azAudio.resume();const melody=[196,246.94,293.66,246.94,174.61,220,261.63,220,164.81,196,246.94,196,146.83,174.61,220,174.61];musicTimer=setInterval(()=>{if(!musicEnabled||!active||ended)return;const f=melody[musicStep%melody.length];musicNote(f,.42,.022);if(musicStep%4===0)musicNote(f/2,.8,.014);musicStep++;},430);}catch(e){}}
+function stopMusic(){if(musicTimer){clearInterval(musicTimer);musicTimer=null;}}
+function enemySpeak(line){try{if(!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window))return;const u=new SpeechSynthesisUtterance(line);u.lang='fr-FR';u.rate=1.05;u.pitch=1.18;u.volume=.9;const voices=window.speechSynthesis.getVoices();const french=voices.find(v=>/^fr([-_]|$)/i.test(v.lang));if(french)u.voice=french;window.speechSynthesis.speak(u);}catch(e){}}
+function knightSpeak(line){try{if(speechReady&&('speechSynthesis' in window)&&('SpeechSynthesisUtterance' in window)){window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(line);u.lang='fr-FR';u.rate=.92;u.pitch=.78;u.volume=1;const voices=window.speechSynthesis.getVoices();const french=voices.find(v=>/^fr([-_]|$)/i.test(v.lang));if(french)u.voice=french;window.speechSynthesis.speak(u);}}catch(e){/* La voix dépend du navigateur et des voix installées. */}}
+const levelNames=['','Les Ruines oubliées','Le Sanctuaire des Cendres','Le Cœur d’Azura','La Crypte des Ombres','La Citadelle de Givre','Le Trône des Braises','Les Portes du Néant'];
+function levelName(n){return levelNames[n]||('Les Terres oubliées '+n);}
+
+let W=0,H=0,dpr=1,last=0,active=false,ended=false,shake=0,flash=0,time=0;
+let adventureMode=true, advStarted=false, advWon=false, advChest=false, advKills=0, advLevel=1, advTarget=3, advTrapCooldown=0, advToastTimer=0, advChestPos={x:0,y:0}, advDoor={x:0,y:0};
+let azuraCoins=0, swordLevel=0, armorLevel=0, gearRewarded=false, gearToastTimer=0, gearOpen=false;
+let adventureElapsed=0, highestLevel=1, advBossSpawned=false, advBossDefeated=false, enemyVoiceCooldown=0;
+function saveProgress(){try{localStorage.setItem('azuraProgressV6',JSON.stringify({coins:azuraCoins,sword:swordLevel,armor:armorLevel,level:highestLevel}));}catch(e){}}
+function loadProgress(){try{const d=JSON.parse(localStorage.getItem('azuraProgressV6')||'null');if(d){azuraCoins=Math.max(0,Number(d.coins)||0);swordLevel=clamp(Number(d.sword)||0,0,2);armorLevel=clamp(Number(d.armor)||0,0,3);highestLevel=clamp(Number(d.level)||1,1,99);}}catch(e){}}
+function formatAdventureTime(){const total=Math.floor(adventureElapsed);return String(Math.floor(total/60)).padStart(2,'0')+':'+String(total%60).padStart(2,'0');}
+function updateAdventureTimer(){const el=document.getElementById('advTimer');if(el)el.textContent='⏱ '+formatAdventureTime();}
+loadProgress();
+const keys={up:false,down:false,left:false,right:false};
+const tiltKeys={up:false,down:false,left:false,right:false};
+let tiltEnabled=false, tiltGamma=0, tiltBeta=0, tiltGammaBase=null, tiltBetaBase=null;
+let tiltLastEvent=0;
+function updateTiltKeys(){const dead=5;const gx=tiltGamma-(tiltGammaBase===null?tiltGamma:tiltGammaBase), by=tiltBeta-(tiltBetaBase===null?tiltBeta:tiltBetaBase);tiltKeys.left=gx < -dead;tiltKeys.right=gx > dead;tiltKeys.up=by < -dead;tiltKeys.down=by > dead;}
+function handleOrientation(e){if(!tiltEnabled)return;tiltLastEvent=Date.now();if(typeof e.gamma!=='number'||typeof e.beta!=='number')return;tiltGamma=e.gamma;tiltBeta=e.beta;if(tiltGammaBase===null){tiltGammaBase=tiltGamma;tiltBetaBase=tiltBeta;}updateTiltKeys();}
+async function toggleTilt(){const btn=document.getElementById('tiltToggle');if(tiltEnabled){tiltEnabled=false;tiltGammaBase=null;tiltBetaBase=null;Object.keys(tiltKeys).forEach(k=>tiltKeys[k]=false);window.removeEventListener('deviceorientation',handleOrientation);btn.textContent='📱 INCLINAISON : OFF';return;}try{if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){const permission=await DeviceOrientationEvent.requestPermission();if(permission!=='granted'){btn.textContent='📱 CAPTEUR REFUSÉ';return;}}if(!('DeviceOrientationEvent' in window)){btn.textContent='📱 CAPTEUR INDISPONIBLE';return;}tiltGammaBase=null;tiltBetaBase=null;tiltLastEvent=0;tiltEnabled=true;window.addEventListener('deviceorientation',handleOrientation);btn.textContent='📱 BOUGE LE TÉLÉPHONE…';setTimeout(()=>{if(tiltEnabled&&Date.now()-tiltLastEvent>1800){btn.textContent='📱 CAPTEUR BLOQUÉ';tiltEnabled=false;window.removeEventListener('deviceorientation',handleOrientation);}else if(tiltEnabled){btn.textContent='📱 INCLINAISON : ON';}},2200);}catch(err){btn.textContent='📱 AUTORISE LE CAPTEUR';}}
+let player,enemies,particles,embers,slashes,stars,arena,afterimages=[];
+const hpbar=document.getElementById('hpbar'),countEl=document.getElementById('enemyCount'),hint=document.getElementById('hint');let bossSpawned=false,bossWarning=0;
+function resize(){dpr=Math.min(window.devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0);arena={cx:W/2,cy:H*.52,rx:Math.min(W*.42,300),ry:Math.min(H*.34,220)};}
+window.addEventListener('resize',resize);resize();
+function rand(a,b){return a+Math.random()*(b-a)}
+function reset(){bossSpawned=false;bossWarning=0;document.getElementById('bossPanel').style.display='none';document.getElementById('countLabel').textContent='ENNEMIS RESTANTS :';player={x:W/2,y:H*.62,r:13,hp:100,maxHp:100,dir:0,attack:0,dash:0,dashTotal:.22,invuln:0,hit:0,walk:0,step:0,attackId:0,combo:0,comboTimer:0};enemies=[];for(let i=0;i<3;i++){let a=i*Math.PI*2/3-.5;enemies.push({x:W/2+Math.cos(a)*arena.rx*.58,y:H*.5+Math.sin(a)*arena.ry*.58,r:14,hp:2,maxHp:2,phase:rand(0,6),cool:rand(.4,1.4),hit:0,dead:false,death:0,deathX:0,deathY:0});}particles=[];slashes=[];afterimages=[];embers=Array.from({length:60},()=>({x:rand(0,W),y:rand(0,H),r:rand(.7,2),v:rand(8,30),a:rand(.15,.65),h:rand(20,42)}));stars=Array.from({length:55},()=>({x:rand(0,W),y:rand(0,H),r:rand(.5,1.5),a:rand(.12,.55)}));shake=0;flash=0;time=0;ended=false;active=true;hpbar.style.width='100%';countEl.textContent='3';hint.textContent='ÉLIMINE LES SENTINELLES';document.getElementById('end').classList.add('hidden');}
+function particle(x,y,color,n=8,power=90){for(let i=0;i<n;i++){let a=rand(0,Math.PI*2),v=rand(power*.25,power);particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,r:rand(1.5,4),life:rand(.25,.65),max:.65,color});}}
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function doAttack(){if(!active||ended||player.attack>0)return;playSfx('swing');
+player.comboTimer=player.comboTimer||0;player.combo=player.comboTimer>0?((player.combo||0)%3)+1:1;player.comboTimer=.78;
+const combo=player.combo, damage=(combo===3?2:1)+swordLevel;
+player.attack=.30;player.attackId++;
+slashes.push({x:player.x,y:player.y,dir:player.dir,life:.34,max:.34,kind:'slash',id:player.attackId,combo});
+particle(player.x+Math.cos(player.dir)*22,player.y+Math.sin(player.dir)*22,combo===3?'#fff0a0':'#ffe2a1',combo===3?12:6,combo===3?125:75);
+let hit=false;
+for(const e of enemies){if(e.dead)continue;let dx=e.x-player.x,dy=e.y-player.y,d=Math.hypot(dx,dy),ang=Math.atan2(dy,dx),diff=Math.atan2(Math.sin(ang-player.dir),Math.cos(ang-player.dir));
+if(d<(e.boss?112:72)&&Math.abs(diff)<(e.boss?1.55:1.28)){
+e.hp=Math.max(0,e.hp-damage);e.hit=.24;particle(e.x,e.y,combo===3?'#fff0a0':'#ffbd72',combo===3?22:13,combo===3?190:150);shake=combo===3?10:5;hit=true;
+if(combo===3){flash=.12;slashes.push({x:e.x,y:e.y,dir:player.dir,life:.24,max:.24,kind:'burst'});for(let k=0;k<12;k++)particle(e.x,e.y,k%2?'#fff0a0':'#8feaff',1,180);}
+playSfx('hit');if(!e.boss&&enemyVoiceCooldown<=0&&Math.random()<.16){enemySpeak(['Tu ne vaincras pas !','Pour le sanctuaire !','Approche donc, intrus !'][Math.floor(Math.random()*3)]);enemyVoiceCooldown=9;}if(e.hp<=0){e.dead=true;e.death=.7;e.deathX=e.x;e.deathY=e.y;particle(e.x,e.y,'#8feaff',22,180);particle(e.x,e.y,'#ff9b53',15,120);for(let k=0;k<10;k++)particle(e.x,e.y,k%2?'#ff9b53':'#8feaff',1,120);}
+}}
+if(!hit)particle(player.x+Math.cos(player.dir)*35,player.y+Math.sin(player.dir)*35,combo===3?'#fff0a0':'#c3dcff',combo===3?10:4,combo===3?100:55);
+hint.textContent=hit?(combo===3?'COUP PUISSANT !':'EN PLEIN DANS LE MILLE !'):(combo===3?'ATTAQUE PUISSANTE':'ENCHAÎNE LES COUPS !');updateHud();}
+function doDash(){if(!active||ended||player.dash>0)return;playSfx('dash');player.dash=.22;player.dashTotal=.22;player.invuln=.4;for(let k=0;k<4;k++)afterimages.push({x:player.x-Math.cos(player.dir)*k*8,y:player.y-Math.sin(player.dir)*k*8,life:.22,max:.22});particle(player.x,player.y,'#8feaff',16,130);particle(player.x,player.y,'#fff0bd',7,80);player.x+=Math.cos(player.dir)*58;player.y+=Math.sin(player.dir)*58;player.x=clamp(player.x,arena.cx-arena.rx*.8,arena.cx+arena.rx*.8);player.y=clamp(player.y,arena.cy-arena.ry*.78,arena.cy+arena.ry*.78);}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+
+
+function gearNotify(msg){
+ const el=document.getElementById('gearToast');if(!el)return;
+ el.textContent=msg;gearToastTimer=1.6;
+}
+function updateGearUI(){
+ const panel=document.getElementById('gearPanel');
+ if(panel)panel.style.display=(advStarted&&gearOpen)?'block':'none';
+ const toggle=document.getElementById('gearToggle');if(toggle){toggle.style.display=advStarted?'block':'none';toggle.textContent=gearOpen?'✕ FERMER':'⚔ ÉQUIPEMENT';}
+ const coins=document.getElementById('coinCount');
+ if(coins)coins.textContent=azuraCoins+' pièces';
+ const status=document.getElementById('gearStatus');
+ if(status)status.textContent=(swordLevel?'Épée d’Azura +' + swordLevel:'Épée usée')+' · '+(armorLevel?'Armure renforcée +' + armorLevel:'Armure de novice');
+}
+function collectReward(){
+ if(gearRewarded)return;
+ gearRewarded=true;azuraCoins+=30;swordLevel=Math.min(2,swordLevel+1);
+ saveProgress();updateGearUI();gearNotify('COFFRE OUVERT : +30 PIÈCES · ÉPÉE AMÉLIORÉE !');
+}
+function buyArmorUpgrade(){
+ if(azuraCoins<25){gearNotify('IL FAUT 25 PIÈCES POUR RENFORCER L’ARMURE');return;}
+ azuraCoins-=25;armorLevel=Math.min(3,armorLevel+1);saveProgress();updateGearUI();gearNotify('ARMURE RENFORCÉE !');
+}
+
+function advNotify(msg){const el=document.getElementById('advToast');if(el){el.textContent=msg;advToastTimer=1.6;}}
+function advReset(nextLevel=advLevel){
+ advLevel=Math.max(1,Math.min(99,nextLevel));enemyVoiceCooldown=4;advTarget=advLevel===1?3:(advLevel===2?4:Math.min(8,5+Math.floor((advLevel-3)/2)));advBossSpawned=false;advBossDefeated=false;bossSpawned=false;bossWarning=0;gearOpen=false;adventureElapsed=0;updateAdventureTimer();highestLevel=Math.max(highestLevel,advLevel);saveProgress();
+ reset(); document.getElementById('intro').classList.add('hidden');document.getElementById('end').classList.add('hidden');
+ active=true;ended=false;advStarted=true;advWon=false;advChest=false;advKills=0;advTrapCooldown=0;advToastTimer=0;gearToastTimer=0;document.getElementById('advToast').textContent='';document.getElementById('gearToast').textContent='';gearRewarded=false;updateGearUI();
+ document.getElementById('advStart').style.display='none';document.querySelector('.controls').style.display='flex';document.getElementById('adventurePanel').style.display='block';document.querySelector('#adventurePanel .advTitle').textContent='NIVEAU '+advLevel+' · '+levelName(advLevel).toLocaleUpperCase('fr-FR');document.getElementById('advObjective').textContent=advLevel===1?'Coffre → sentinelles → porte lumineuse':'Coffre → sentinelles → boss → porte lumineuse';
+ player.x=W*.5;player.y=H*.78;player.hp=100;player.attack=0;player.dash=0;advChestPos={x:arena.cx+arena.rx*.55,y:arena.cy};advDoor={x:arena.cx,y:arena.cy-arena.ry*.42};
+ enemies=[];for(let i=0;i<advTarget;i++){const x=W*(.18+i*(.64/Math.max(1,advTarget-1))),y=H*(.35+(i%2)*.08);enemies.push({x,y,r:14,hp:3,maxHp:3,phase:rand(0,6),cool:rand(.5,1.2),hit:0,dead:false,death:0,deathX:0,deathY:0,dir:Math.PI/2,speed:34,boss:false,windup:0,slam:0,homeX:x,homeY:y});}
+ particles=[];slashes=[];afterimages=[];document.getElementById('bossPanel').style.display='none';document.getElementById('countLabel').textContent='ENNEMIS RESTANTS :';knightSpeak(advLevel===1?'Reste sur tes gardes. Le coffre et la sortie sont protégés.':(advLevel===2?'Le gardien du sanctuaire nous attend. Ne baisse pas ton épée !':('Nous sommes au niveau '+advLevel+'. Prépare-toi, le boss nous attend !')));document.getElementById('restart').textContent='REJOUER';updateHud();
+}
+function advUpdate(dt){
+ if(!advStarted||advWon)return;
+ if(active&&!ended){adventureElapsed+=dt;updateAdventureTimer();}
+ advTrapCooldown=Math.max(0,advTrapCooldown-dt);enemyVoiceCooldown=Math.max(0,enemyVoiceCooldown-dt);
+ if(gearToastTimer>0){gearToastTimer-=dt;if(gearToastTimer<=0){const gt=document.getElementById('gearToast');if(gt)gt.textContent='';}}
+ if(advToastTimer>0){advToastTimer-=dt;if(advToastTimer<=0){const el=document.getElementById('advToast');if(el)el.textContent='';}}
+ const chest=advChestPos;
+ if(!advChest&&Math.hypot(player.x-chest.x,player.y-chest.y)<52&&(player.attack>0||keys.up||keys.down||keys.left||keys.right)){advChest=true;player.hp=Math.min(100,player.hp+25);particle(chest.x,chest.y,'#ffd875',22,130);collectReward();playSfx('chest');knightSpeak('Le coffre est ouvert ! Prends les pièces, puis avançons.');}
+ advKills=enemies.filter(e=>!e.boss&&e.dead).length;
+ const trap={x:W*.5,y:H*.52};
+ if(Math.hypot(player.x-trap.x,player.y-trap.y)<31&&advTrapCooldown<=0){player.hp=Math.max(0,player.hp-Math.max(4,10-armorLevel*2));advTrapCooldown=1.2;shake=6;particle(player.x,player.y,'#ff6a67',10,95);advNotify('PIÈGE ACTIVÉ ! ÉVITE LES RUNES ROUGES');if(player.hp<=0)finish(false);}
+ if(advChest&&advKills>=advTarget&&advLevel>=2&&!advBossSpawned){
+   advBossSpawned=true;bossSpawned=true;
+   const bossHp=advLevel===2?38:Math.min(240,50+(advLevel-2)*10);const boss={x:arena.cx,y:arena.cy-arena.ry*.12,r:advLevel>=7?52:46,hp:bossHp,maxHp:bossHp,phase:0,cool:Math.max(1.15,2.15-(advLevel-2)*.045),hit:0,dead:false,death:0,deathX:0,deathY:0,boss:true,windup:0,slam:0,level:advLevel};
+   enemies.push(boss);document.getElementById('bossPanel').style.display='block';document.getElementById('countLabel').textContent='BOSS RESTANT :';
+   playSfx('boss');knightSpeak(advLevel===2?'Le Colosse géant se réveille ! Esquive son écrasement, puis frappe !':('Le boss du niveau '+advLevel+' est réveillé ! Garde tes distances !'));enemySpeak(advLevel===2?'Tu ne passeras pas, chevalier !':(advLevel>=8?'Je suis le fléau d’Azura ! Prépare-toi à tomber !':'Intrus ! Tu vas rejoindre les cendres !'));hint.textContent='BOSS : ATTAQUE ET ESQUIVE !';shake=12;flash=.35;particle(boss.x,boss.y,'#ff654f',35,220);
+ }
+ const boss=enemies.find(e=>e.boss);
+ advBossDefeated=!!(boss&&boss.dead);
+ const doorReady=advChest&&advKills>=advTarget&&(advLevel===1||advBossDefeated);
+ const objective=document.getElementById('advObjective'),progress=document.getElementById('advProgress'),fill=document.getElementById('advFill');
+ if(objective&&progress&&fill){objective.textContent=!advChest?'Ouvre le coffre (approche-toi)':advKills<advTarget?'Élimine les sentinelles':(advLevel>=2&&!advBossDefeated?'Vaincs le boss !':'Porte lumineuse : approche-toi');progress.textContent=(advChest?'1':'0')+' coffre · '+advKills+' / '+advTarget+' sentinelles'+(advLevel>=2?' · '+(advBossDefeated?'boss vaincu':(advBossSpawned?'boss actif':'boss scellé')):'');fill.style.width=((advChest?25:0)+Math.min(advTarget,advKills)/advTarget*45+(advBossDefeated?20:0)+(advLevel===1&&advKills>=advTarget?30:0))+'%';}
+ if(doorReady&&Math.hypot(player.x-advDoor.x,player.y-advDoor.y)<52&&!advWon){advWon=true;finish(true);}
+}
+
+function drawAdventure(){
+ if(!advStarted)return;
+ ctx.save();
+ // Décors propres à chaque région.
+ if(advLevel===1){for(let i=0;i<7;i++){const x=W*(.12+i*.13),y=H*(.27+(i%3)*.19);ctx.fillStyle='rgba(100,119,153,.3)';ctx.strokeStyle='rgba(191,205,235,.35)';ctx.lineWidth=1.5;ctx.save();ctx.translate(x,y);ctx.rotate(i%2?-.12:.1);ctx.fillRect(-11,-15,22,30);ctx.strokeRect(-11,-15,22,30);ctx.restore();}}else if(advLevel===2){for(let i=0;i<8;i++){const x=W*(.1+i*.115),y=H*(i%2?.27:.72);ctx.fillStyle='rgba(40,181,188,.22)';ctx.strokeStyle='rgba(106,255,240,.65)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y-24);ctx.lineTo(x+13,y-8);ctx.lineTo(x+10,y+19);ctx.lineTo(x-10,y+19);ctx.lineTo(x-13,y-8);ctx.closePath();ctx.fill();ctx.stroke();}}else{for(let i=0;i<12;i++){const a=i*Math.PI/6,x=arena.cx+Math.cos(a)*arena.rx*.7,y=arena.cy+Math.sin(a)*arena.ry*.7;ctx.strokeStyle='rgba(255,105,65,.7)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,14,0,Math.PI*1.5);ctx.stroke();ctx.fillStyle='rgba(255,70,40,.2)';ctx.fillRect(x-8,y-8,16,16);}}
+ // Rune trap.
+ ctx.globalAlpha=.75+.15*Math.sin(performance.now()/160);ctx.strokeStyle=advLevel===1?'#ff5968':(advLevel===2?'#42f5e6':'#ff7b45');ctx.lineWidth=3;ctx.beginPath();ctx.arc(W*.5,H*.52,31,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(W*.5-20,H*.52);ctx.lineTo(W*.5+20,H*.52);ctx.moveTo(W*.5,H*.52-20);ctx.lineTo(W*.5,H*.52+20);ctx.stroke();ctx.globalAlpha=1;
+ // Treasure chest.
+ const cx=advChestPos.x,cy=advChestPos.y;ctx.fillStyle=advChest?'#685a4b':(advLevel===2?'#168f91':(advLevel===3?'#8b3328':'#a76b32'));ctx.strokeStyle=advChest?'#9b8d7d':(advLevel===2?'#8ff7ff':(advLevel===3?'#ff9b53':'#ffd875'));ctx.lineWidth=2;ctx.fillRect(cx-15,cy-11,30,23);ctx.strokeRect(cx-15,cy-11,30,23);ctx.fillStyle='#f6d778';ctx.fillRect(cx-3,cy-2,6,7);if(!advChest){ctx.fillStyle='#fff0a8';ctx.beginPath();ctx.arc(cx,cy-15,3,0,Math.PI*2);ctx.fill();}
+ // Exit door.
+ const dx=advDoor.x,dy=advDoor.y;const boss=enemies.find(e=>e.boss);const exitReady=advChest&&enemies.filter(e=>!e.boss&&e.dead).length>=advTarget&&(advLevel===1||!!(boss&&boss.dead));ctx.fillStyle=exitReady?'#2b9eaa':'#3a4057';ctx.strokeStyle=exitReady?'#8ff7ff':'#e7c27c';ctx.lineWidth=exitReady?4:3;if(exitReady){ctx.shadowColor='#62efff';ctx.shadowBlur=22;}ctx.beginPath();ctx.roundRect(dx-22,dy-24,44,48,8);ctx.fill();ctx.stroke();ctx.fillStyle='#ffda8b';ctx.beginPath();ctx.arc(dx+10,dy+2,3,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;if(exitReady){ctx.fillStyle='#bafaff';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillText('SORTIE',dx,dy-31);}
+ ctx.restore();
+}
+
+function updateHud(){const alive=enemies.filter(e=>!e.dead).length;if(adventureMode&&advStarted){countEl.textContent=alive;hpbar.style.width=Math.max(0,player.hp)+'%';if(player.hp<=0&&!ended)finish(false);return;}countEl.textContent=bossSpawned?(alive?'1':'0'):alive;hpbar.style.width=Math.max(0,player.hp)+'%';if(alive===0&&!ended){if(!bossSpawned){bossSpawned=true;let boss={x:arena.cx,y:arena.cy-arena.ry*.2,r:31,hp:14,maxHp:14,phase:0,cool:1.8,hit:0,dead:false,death:0,deathX:0,deathY:0,boss:true,windup:0,slam:0};enemies=[boss];document.getElementById('bossPanel').style.display='block';document.getElementById('countLabel').textContent='BOSS RESTANT :';hint.textContent='LE COLOSSE ARRIVE — ATTAQUE ET ESQUIVE !';bossWarning=1.5;shake=12;flash=.35;particle(boss.x,boss.y,'#ff654f',35,220);}else if(!enemies.some(e=>!e.dead))finish(true);}if(player.hp<=0&&!ended)finish(false);}
+function finish(win){ended=true;active=false;if(win&&adventureMode&&advStarted){playSfx('win');highestLevel=Math.max(highestLevel,Math.min(99,advLevel+1));saveProgress();}document.getElementById('endTitle').textContent=win?(adventureMode&&advStarted?'NIVEAU TERMINÉ':'VICTOIRE'):'DÉFAITE';document.getElementById('endText').textContent=win?(adventureMode&&advStarted?(advLevel===1?'Les Ruines oubliées sont explorées. Le Sanctuaire des Cendres est maintenant accessible !':(advLevel===2?'Le gardien est vaincu. Le Cœur d’Azura est maintenant accessible !':'Le Cœur d’Azura est libéré !')):'Le Colosse cendré est vaincu. La braise d’Azura se réveille…'):'La lumière faiblit. Reprends ton souffle et retente l’épreuve.';document.getElementById('restart').textContent=win&&adventureMode&&advStarted?'NIVEAU SUIVANT':'REJOUER';if(win&&adventureMode&&advStarted)document.getElementById('endText').textContent=levelName(advLevel)+' terminé ! Le niveau '+(advLevel+1)+' est débloqué.'+' Temps : '+formatAdventureTime()+'. Progression et équipement sauvegardés.';document.getElementById('end').classList.remove('hidden');}
+function update(dt){
+if(adventureMode&&advStarted)advUpdate(dt);time+=dt;shake=Math.max(0,shake-dt*20);flash=Math.max(0,flash-dt*2);if(active&&!ended){let vx=((keys.right||tiltKeys.right)?1:0)-((keys.left||tiltKeys.left)?1:0),vy=((keys.down||tiltKeys.down)?1:0)-((keys.up||tiltKeys.up)?1:0);if(vx||vy){let l=Math.hypot(vx,vy);vx/=l;vy/=l;player.dir=Math.atan2(vy,vx);player.walk+=dt*(l>0?1:0);player.step=Math.sin(player.walk*13);if(player.dash<=0){let running=keys.up||keys.down||keys.left||keys.right;let speed=running?170:170;player.x+=vx*speed*dt;player.y+=vy*speed*dt;if(Math.random()<dt*20)particle(player.x+rand(-5,5),player.y+8,'#8ea7c7',1,20);}}else{player.step*=Math.pow(.02,dt);player.walk+=dt*.8;}player.x=clamp(player.x,arena.cx-arena.rx*.78,arena.cx+arena.rx*.78);player.y=clamp(player.y,arena.cy-arena.ry*.78,arena.cy+arena.ry*.78);player.attack=Math.max(0,player.attack-dt);player.comboTimer=Math.max(0,(player.comboTimer||0)-dt);player.dash=Math.max(0,player.dash-dt);player.invuln=Math.max(0,player.invuln-dt);player.hit=Math.max(0,player.hit-dt);
+for(const e of enemies){if(e.dead){e.death=Math.max(0,e.death-dt);continue;}e.phase+=dt;e.cool-=dt;e.hit=Math.max(0,e.hit-dt);let dx=player.x-e.x,dy=player.y-e.y,d=Math.hypot(dx,dy)||1;
+if(e.boss){if(e.windup>0){e.windup-=dt;if(e.windup<=0){e.slam=.5;shake=14;flash=.28;particle(e.x,e.y,'#ff4b57',34,230);slashes.push({x:e.x,y:e.y,dir:0,life:.55,max:.55,kind:'shock'});const enraged=e.hp/e.maxHp<.45;const bossDamage=Math.min(28,(enraged?20:15)+Math.floor((advLevel-2)*1.1));const slamRange=enraged?155:(advLevel>=7?150:125);if(d<slamRange&&player.invuln<=0){player.hp=Math.max(0,player.hp-bossDamage);player.hit=.3;particle(player.x,player.y,'#ff4b57',18,160);updateHud();}}}else if(e.cool<=0){e.cool=Math.max(1.4,(e.hp/e.maxHp<.45?2.2:3.0)-(advLevel-2)*.035);e.windup=Math.max(.55,(e.hp/e.maxHp<.45?.78:.95)-(advLevel-2)*.01);bossWarning=e.windup;particle(e.x,e.y,'#ffb45e',10,90);}if(d>55){e.x+=dx/d*(30+Math.min(18,(advLevel-2)*1.5))*dt;e.y+=dy/d*24*dt;}e.x=clamp(e.x,arena.cx-arena.rx*.6,arena.cx+arena.rx*.6);e.y=clamp(e.y,arena.cy-arena.ry*.5,arena.cy+arena.ry*.5);}
+else{if(d>34){e.x+=dx/d*(34+Math.sin(e.phase*2)*5)*dt;e.y+=dy/d*(34+Math.sin(e.phase*2)*5)*dt;}if(d<34&&e.cool<=0){e.cool=1.25;e.x-=dx/d*22;e.y-=dy/d*22;if(player.invuln<=0){player.hp=Math.max(0,player.hp-12);playSfx('hurt');player.hit=.25;shake=7;flash=.22;particle(player.x,player.y,'#ff5c75',12,110);updateHud();}}}
+}
+bossWarning=Math.max(0,bossWarning-dt);
+}
+for(const e of enemies){if(e.boss){document.getElementById('bossbar').style.width=Math.max(0,e.hp/e.maxHp*100)+'%';}}
+for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=Math.pow(.05,dt);p.vy*=Math.pow(.05,dt);p.life-=dt;}particles=particles.filter(p=>p.life>0);
+for(const e of embers){e.y-=e.v*dt;if(e.y<-5){e.y=H+5;e.x=rand(0,W)}}
+
+// Combo de trois coups : anneau d'énergie et étincelles renforcées.
+for(const s of slashes){if(s.kind==='burst'){const p=1-s.life/s.max;ctx.save();ctx.globalAlpha=Math.max(0,1-p);ctx.strokeStyle='#fff0a0';ctx.lineWidth=3*(1-p)+1;ctx.beginPath();ctx.arc(s.x,s.y,10+p*42,0,Math.PI*2);ctx.stroke();ctx.restore();}}
+for(const s of slashes)s.life-=dt;slashes=slashes.filter(s=>s.life>0);for(const a of afterimages)a.life-=dt;afterimages=afterimages.filter(a=>a.life>0);
+}
+function glow(x,y,r,color,blur=20){ctx.save();ctx.shadowBlur=blur;ctx.shadowColor=color;ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.restore();}
+function draw(){
+ctx.save();if(shake>0)ctx.translate(rand(-shake,shake),rand(-shake,shake));let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#10172c');g.addColorStop(.55,'#15172a');g.addColorStop(1,'#080b16');ctx.fillStyle=g;ctx.fillRect(-10,-10,W+20,H+20);
+// distant sky and ruins
+for(const s of stars){ctx.globalAlpha=s.a;ctx.fillStyle='#d6e8ff';ctx.fillRect(s.x,s.y,s.r,s.r)}ctx.globalAlpha=1;
+ctx.fillStyle='#1b2438';ctx.beginPath();ctx.moveTo(0,H*.39);ctx.lineTo(W*.12,H*.24);ctx.lineTo(W*.19,H*.4);ctx.lineTo(W*.25,H*.29);ctx.lineTo(W*.33,H*.42);ctx.lineTo(W*.4,H*.34);ctx.lineTo(W*.51,H*.41);ctx.lineTo(W*.62,H*.27);ctx.lineTo(W*.71,H*.42);ctx.lineTo(W*.82,H*.25);ctx.lineTo(W*.91,H*.4);ctx.lineTo(W,H*.31);ctx.lineTo(W,H*.55);ctx.lineTo(0,H*.55);ctx.closePath();ctx.fill();
+ctx.strokeStyle='#62708b33';ctx.lineWidth=2;for(let i=0;i<5;i++){let x=W*(.08+i*.2);ctx.beginPath();ctx.moveTo(x,H*.35);ctx.lineTo(x,H*.49);ctx.stroke();}
+// arena floor
+ctx.save();ctx.translate(arena.cx,arena.cy);ctx.scale(1,arena.ry/arena.rx);let rg=ctx.createRadialGradient(0,0,10,0,0,arena.rx);const extraPalettes=[['#552a2c','#301a2a','#170f20'],['#33294d','#211a38','#100e22'],['#31505b','#1b303c','#0c1828'],['#59402a','#35251e','#191219']];const floorPalette=advStarted?(advLevel===2?['#16404a','#102b3a','#081a29']:(advLevel===1?['#303044','#20283a','#101727']:extraPalettes[(advLevel-3)%extraPalettes.length])):['#303044','#20283a','#101727'];rg.addColorStop(0,floorPalette[0]);rg.addColorStop(.65,floorPalette[1]);rg.addColorStop(1,floorPalette[2]);ctx.fillStyle=rg;ctx.beginPath();ctx.ellipse(0,0,arena.rx,arena.rx,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle=advStarted?(advLevel===2?'#55f4e855':(advLevel===1?'#e5b76a55':(advLevel%2?'#ff805855':'#bca0ff55'))):'#e5b76a55';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,0,arena.rx*.92,arena.rx*.92,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle=advStarted?(advLevel===2?'#55f4e822':(advLevel===1?'#7c96c522':(advLevel%2?'#ff805822':'#bca0ff22'))):'#7c96c522';ctx.lineWidth=1;for(let i=0;i<12;i++){let a=i*Math.PI/6;ctx.beginPath();ctx.moveTo(Math.cos(a)*arena.rx*.18,Math.sin(a)*arena.rx*.18);ctx.lineTo(Math.cos(a)*arena.rx*.88,Math.sin(a)*arena.rx*.88);ctx.stroke()}for(let rr of [.3,.55,.75]){ctx.beginPath();ctx.ellipse(0,0,arena.rx*rr,arena.rx*rr,0,0,Math.PI*2);ctx.stroke()}ctx.restore();
+// stone fragments
+for(let i=0;i<12;i++){let a=i*Math.PI/6,x=arena.cx+Math.cos(a)*arena.rx*.94,y=arena.cy+Math.sin(a)*arena.ry*.94;ctx.fillStyle=i%2?'#30384b':'#3b3a48';ctx.beginPath();ctx.moveTo(x-9,y-4);ctx.lineTo(x+5,y-8);ctx.lineTo(x+11,y+5);ctx.lineTo(x-5,y+9);ctx.closePath();ctx.fill();ctx.strokeStyle='#8b9ab633';ctx.stroke()}
+// central ember
+glow(arena.cx,arena.cy,6,'#ff9e53',30);ctx.strokeStyle='#ffca7955';ctx.lineWidth=2;ctx.beginPath();ctx.arc(arena.cx,arena.cy,17+Math.sin(time*3)*3,0,Math.PI*2);ctx.stroke();
+if(adventureMode&&advStarted)drawAdventure();
+for(const e of enemies){
+if(e.dead){
+ if(e.death>0){let t=e.death/.7;ctx.save();ctx.globalAlpha=t;ctx.translate(e.deathX,e.deathY+(1-t)*18);ctx.rotate((1-t)*1.3);glow(0,0,e.r*1.5,'#8feaff',24);ctx.fillStyle='#75cde2';ctx.beginPath();ctx.arc(0,0,e.r*t,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#e6fbff';ctx.lineWidth=2;ctx.stroke();ctx.restore();}
+ continue;
+}
+if(e.boss){
+let pulse=1+Math.sin(time*4)*.035,bob=Math.sin(time*5)*2;
+if(e.windup>0){ctx.save();ctx.globalAlpha=.28+.18*Math.sin(time*35);ctx.strokeStyle=e.hp/e.maxHp<.45?'#ffb23f':'#ff4d5e';ctx.lineWidth=7;ctx.beginPath();ctx.ellipse(e.x,e.y,165,88,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
+const rage=e.hp/e.maxHp<.45;ctx.fillStyle='#03050b99';ctx.beginPath();ctx.ellipse(e.x,e.y+38,58,22,0,0,Math.PI*2);ctx.fill();glow(e.x,e.y, rage?68:60,rage?'#ff182d':'#ff263f',rage?48:38);
+ctx.save();ctx.translate(e.x,e.y+bob);ctx.scale(pulse*1.42,1.42);
+ctx.fillStyle='#32182c';ctx.beginPath();ctx.moveTo(-28,-12);ctx.lineTo(-38,20);ctx.lineTo(-23,15);ctx.lineTo(-12,28);ctx.lineTo(0,18);ctx.lineTo(14,29);ctx.lineTo(28,15);ctx.lineTo(38,20);ctx.lineTo(27,-13);ctx.closePath();ctx.fill();
+let bg=ctx.createLinearGradient(-30,-20,30,18);bg.addColorStop(0,e.hit>0?'#fff':'#e26b62');bg.addColorStop(.45,'#73304c');bg.addColorStop(1,'#21192e');ctx.fillStyle=bg;ctx.strokeStyle='#ffc078';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-26,-20);ctx.lineTo(-18,-31);ctx.lineTo(18,-31);ctx.lineTo(27,-18);ctx.lineTo(24,12);ctx.lineTo(0,27);ctx.lineTo(-24,12);ctx.closePath();ctx.fill();ctx.stroke();
+ctx.fillStyle='#3b2138';ctx.beginPath();ctx.moveTo(-18,-30);ctx.lineTo(-31,-52);ctx.lineTo(-10,-40);ctx.lineTo(0,-34);ctx.lineTo(12,-42);ctx.lineTo(31,-54);ctx.lineTo(20,-28);ctx.closePath();ctx.fill();ctx.stroke();
+glow(e.x-10,e.y-15,4,'#fff08a',15);glow(e.x+10,e.y-15,4,'#fff08a',15);
+ctx.fillStyle='#ffc078';ctx.beginPath();ctx.moveTo(0,-5);ctx.lineTo(8,5);ctx.lineTo(0,15);ctx.lineTo(-8,5);ctx.closePath();ctx.fill();
+ctx.strokeStyle='#ffbd65';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(25,-5);ctx.lineTo(42,18);ctx.stroke();ctx.fillStyle='#5a263d';ctx.beginPath();ctx.moveTo(35,10);ctx.lineTo(55,4);ctx.lineTo(64,25);ctx.lineTo(43,32);ctx.closePath();ctx.fill();ctx.stroke();
+ctx.restore();continue;
+}
+let pulse=1+Math.sin(time*5+e.phase)*.05, bob=Math.sin(time*7+e.phase)*2, facing=Math.atan2(player.y-e.y,player.x-e.x);
+ctx.fillStyle='#050711aa';ctx.beginPath();ctx.ellipse(e.x,e.y+13,e.r*1.45,e.r*.62,0,0,Math.PI*2);ctx.fill();
+glow(e.x,e.y,e.r*1.5,'#ff3e58',22);
+ctx.save();ctx.translate(e.x,e.y+bob);ctx.rotate(e.hit>0?Math.sin(time*80)*.08:0);ctx.scale(pulse,1);
+// ragged shadow cloak
+ctx.fillStyle='#30152d';ctx.beginPath();ctx.moveTo(-10,-9);ctx.lineTo(-13,6);ctx.lineTo(-8,13);ctx.lineTo(-2,8);ctx.lineTo(4,14);ctx.lineTo(12,5);ctx.lineTo(8,-10);ctx.closePath();ctx.fill();
+// armored torso
+let armor=ctx.createLinearGradient(-12,-8,12,9);armor.addColorStop(0,e.hit>0?'#fff0d2':'#ffb18a');armor.addColorStop(.35,'#9d3b57');armor.addColorStop(.7,'#57263f');armor.addColorStop(1,'#25182e');
+ctx.fillStyle=armor;ctx.beginPath();ctx.moveTo(-8,-9);ctx.lineTo(-4,-13);ctx.lineTo(5,-13);ctx.lineTo(9,-8);ctx.lineTo(8,5);ctx.lineTo(0,10);ctx.lineTo(-9,5);ctx.closePath();ctx.fill();ctx.strokeStyle='#e89b94';ctx.lineWidth=1.4;ctx.stroke();
+// breastplate and glowing rune
+ctx.fillStyle='#54253f';ctx.beginPath();ctx.moveTo(-5,-8);ctx.lineTo(5,-8);ctx.lineTo(6,2);ctx.lineTo(0,6);ctx.lineTo(-6,2);ctx.closePath();ctx.fill();ctx.strokeStyle='#ffb06d';ctx.lineWidth=1;ctx.stroke();
+glow(0,-1,2.2,'#ffc46e',10);ctx.fillStyle='#ffe4a1';ctx.beginPath();ctx.moveTo(0,-5);ctx.lineTo(3,-1);ctx.lineTo(0,3);ctx.lineTo(-3,-1);ctx.closePath();ctx.fill();
+// shoulder armor spikes
+ctx.fillStyle='#b95a68';ctx.strokeStyle='#f3b09b';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-7,-8);ctx.lineTo(-14,-14);ctx.lineTo(-12,-5);ctx.lineTo(-7,-3);ctx.closePath();ctx.fill();ctx.stroke();ctx.beginPath();ctx.moveTo(7,-8);ctx.lineTo(14,-14);ctx.lineTo(12,-5);ctx.lineTo(7,-3);ctx.closePath();ctx.fill();ctx.stroke();
+// helmet with horns, face mask and eyes
+let helm=ctx.createLinearGradient(-8,-22,8,-10);helm.addColorStop(0,'#f0b78f');helm.addColorStop(.45,'#8b435c');helm.addColorStop(1,'#34233d');
+ctx.fillStyle=helm;ctx.beginPath();ctx.moveTo(-8,-13);ctx.lineTo(-7,-22);ctx.lineTo(-2,-25);ctx.lineTo(5,-23);ctx.lineTo(8,-15);ctx.lineTo(5,-10);ctx.lineTo(-5,-10);ctx.closePath();ctx.fill();ctx.strokeStyle='#ffc9a5';ctx.stroke();
+ctx.fillStyle='#24152c';ctx.beginPath();ctx.moveTo(-5,-17);ctx.lineTo(5,-17);ctx.lineTo(4,-12);ctx.lineTo(-4,-12);ctx.closePath();ctx.fill();glow(-3,-15,1.5,'#fff1a8',8);glow(3,-15,1.5,'#fff1a8',8);
+ctx.strokeStyle='#d08c91';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-5,-22);ctx.lineTo(-9,-28);ctx.moveTo(5,-22);ctx.lineTo(9,-28);ctx.stroke();
+// arms, gauntlets and a menacing blade facing player
+ctx.strokeStyle='#79344e';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-7,-5);ctx.lineTo(-12,2);ctx.moveTo(7,-5);ctx.lineTo(12,1);ctx.stroke();
+ctx.fillStyle='#d37d81';ctx.beginPath();ctx.arc(-12,2,3,0,Math.PI*2);ctx.arc(12,1,3,0,Math.PI*2);ctx.fill();
+ctx.save();ctx.translate(12,1);ctx.rotate(facing);ctx.strokeStyle='#f6d5b0';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(21,0);ctx.stroke();ctx.strokeStyle='#ff755e';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(2,-3);ctx.lineTo(2,3);ctx.stroke();ctx.fillStyle='#e7c5a5';ctx.beginPath();ctx.moveTo(21,0);ctx.lineTo(27,-2);ctx.lineTo(24,2);ctx.closePath();ctx.fill();ctx.restore();
+ctx.restore();
+// health strip
+ctx.fillStyle='#151526';ctx.fillRect(e.x-17,e.y-e.r-19,34,4);ctx.fillStyle='#ff6b73';ctx.fillRect(e.x-17,e.y-e.r-19,34*(e.hp/e.maxHp),4);
+}
+// dash afterimages
+for(const a of afterimages){ctx.save();ctx.globalAlpha=(a.life/a.max)*.32;glow(a.x,a.y,13,'#79f1ff',20);ctx.fillStyle='#77e8ff';ctx.beginPath();ctx.ellipse(a.x,a.y,10,13,0,0,Math.PI*2);ctx.fill();ctx.restore();}
+// armored Azura hero
+if(player){
+ let moving=Math.abs(player.step)>.12,bob=moving?Math.abs(player.step)*2.8:Math.sin(time*2.5)*1.2;
+ let attackT=player.attack>0?1-player.attack/.34:0,slashSwing=player.attack>0?Math.sin(attackT*Math.PI):0,hurt=player.hit>0;
+ ctx.fillStyle='#05071199';ctx.beginPath();ctx.ellipse(player.x,player.y+13,19,8,0,0,Math.PI*2);ctx.fill();
+ if(player.invuln>0&&Math.floor(time*25)%2===0)ctx.globalAlpha=.42;
+ ctx.save();ctx.translate(player.x,player.y-bob);ctx.rotate(hurt?Math.sin(time*80)*.08:0);
+ // split greaves and boots
+ let stride=moving?Math.sin(player.walk*13)*6:0;
+ ctx.strokeStyle='#183452';ctx.lineWidth=6;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-4,5);ctx.lineTo(-5-stride,14);ctx.moveTo(4,5);ctx.lineTo(5+stride,14);ctx.stroke();
+ ctx.strokeStyle='#a8e9ff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-5-stride,14);ctx.lineTo(-10-stride,16);ctx.moveTo(5+stride,14);ctx.lineTo(10+stride,16);ctx.stroke();
+ // flowing blue mantle
+ ctx.fillStyle='#17365e';ctx.beginPath();ctx.moveTo(-7,-9);ctx.lineTo(8,-9);ctx.lineTo(13,7);ctx.lineTo(7,13);ctx.lineTo(-5,9);ctx.lineTo(-13,5);ctx.closePath();ctx.fill();ctx.strokeStyle='#3f83ac';ctx.lineWidth=1;ctx.stroke();
+ // torso armor
+ let body=ctx.createLinearGradient(-10,-11,10,9);body.addColorStop(0,hurt?'#fff':'#dffbff');body.addColorStop(.25,'#a6e9f7');body.addColorStop(.55,'#4c9ec8');body.addColorStop(1,'#1d3f70');
+ ctx.fillStyle=body;ctx.beginPath();ctx.moveTo(-7,-10);ctx.lineTo(-4,-13);ctx.lineTo(4,-13);ctx.lineTo(8,-9);ctx.lineTo(9,4);ctx.lineTo(0,10);ctx.lineTo(-9,4);ctx.closePath();ctx.fill();ctx.strokeStyle='#e3fbff';ctx.lineWidth=1.3;ctx.stroke();
+ // chest plate, ribs and glowing Azura sigil
+ ctx.fillStyle='#234f7b';ctx.beginPath();ctx.moveTo(-5,-8);ctx.lineTo(5,-8);ctx.lineTo(6,2);ctx.lineTo(0,6);ctx.lineTo(-6,2);ctx.closePath();ctx.fill();ctx.strokeStyle='#8ceeff';ctx.lineWidth=1;ctx.stroke();
+ glow(0,-1,2.5,'#a8f6ff',12);ctx.fillStyle='#f1ffff';ctx.beginPath();ctx.moveTo(0,-5);ctx.lineTo(3,-1);ctx.lineTo(0,3);ctx.lineTo(-3,-1);ctx.closePath();ctx.fill();
+ // shoulder plates with metallic highlights
+ let shoulder=ctx.createLinearGradient(-14,-10,14,0);shoulder.addColorStop(0,'#4d89b3');shoulder.addColorStop(.5,'#d6f8ff');shoulder.addColorStop(1,'#356b9b');
+ ctx.fillStyle=shoulder;ctx.strokeStyle='#d9fbff';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-6,-8);ctx.lineTo(-13,-11);ctx.lineTo(-15,-5);ctx.lineTo(-9,-2);ctx.closePath();ctx.fill();ctx.stroke();ctx.beginPath();ctx.moveTo(6,-8);ctx.lineTo(13,-11);ctx.lineTo(15,-5);ctx.lineTo(9,-2);ctx.closePath();ctx.fill();ctx.stroke();
+ // arms and gauntlets
+ ctx.strokeStyle='#4b91bc';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-7,-5);ctx.lineTo(-11,1+stride*.25);ctx.moveTo(7,-5);ctx.lineTo(11+slashSwing*8,-1-slashSwing*7);ctx.stroke();
+ ctx.fillStyle='#d5f8ff';ctx.beginPath();ctx.arc(-11,1+stride*.25,3,0,Math.PI*2);ctx.arc(11+slashSwing*8,-1-slashSwing*7,3,0,Math.PI*2);ctx.fill();
+ // helmet, crest and luminous visor
+ let hg=ctx.createRadialGradient(-4,-17,1,0,-12,11);hg.addColorStop(0,'#ffffff');hg.addColorStop(.4,'#9ee8f7');hg.addColorStop(1,'#28517f');
+ ctx.fillStyle=hg;ctx.beginPath();ctx.moveTo(-7,-12);ctx.lineTo(-7,-19);ctx.lineTo(-3,-24);ctx.lineTo(3,-24);ctx.lineTo(7,-19);ctx.lineTo(7,-12);ctx.lineTo(0,-8);ctx.closePath();ctx.fill();ctx.strokeStyle='#e4fdff';ctx.lineWidth=1.2;ctx.stroke();
+ ctx.fillStyle='#12304f';ctx.beginPath();ctx.moveTo(-5,-17);ctx.lineTo(5,-17);ctx.lineTo(4,-13);ctx.lineTo(-4,-13);ctx.closePath();ctx.fill();glow(-2,-15,1.2,'#e6ffff',7);glow(3,-15,1.2,'#e6ffff',7);
+ ctx.fillStyle='#f3d28d';ctx.beginPath();ctx.moveTo(-2,-23);ctx.lineTo(0,-30);ctx.lineTo(3,-23);ctx.closePath();ctx.fill();
+ // ornate sword oriented by aim; bright blade and crossguard
+ let swordAngle=player.dir+(player.attack>0?(-1.1+attackT*2.2):0);
+ ctx.save();ctx.translate(9,0);ctx.rotate(swordAngle);
+ ctx.shadowBlur=12;ctx.shadowColor='#8feeff';ctx.fillStyle='#c9f5ff';ctx.beginPath();ctx.moveTo(2,-2);ctx.lineTo(22,-1);ctx.lineTo(27,0);ctx.lineTo(22,1);ctx.lineTo(2,2);ctx.closePath();ctx.fill();
+ ctx.strokeStyle='#ffffff';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(5,0);ctx.lineTo(24,0);ctx.stroke();
+ ctx.strokeStyle='#f1d49a';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(3,-5);ctx.lineTo(3,5);ctx.stroke();ctx.strokeStyle='#8e613c';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-3,0);ctx.lineTo(3,0);ctx.stroke();
+ if(player.attack>0){ctx.globalAlpha=.9*Math.sin(attackT*Math.PI);ctx.strokeStyle='#c9fbff';ctx.lineWidth=4;ctx.shadowBlur=20;ctx.shadowColor='#8feeff';ctx.beginPath();ctx.moveTo(13,-4);ctx.quadraticCurveTo(26,-22,39,-6);ctx.stroke();}
+ ctx.restore();ctx.restore();ctx.globalAlpha=1;
+}
+
+// slash arcs
+for(const s of slashes){let alpha=s.life/s.max, progress=1-alpha;ctx.save();ctx.globalAlpha=alpha;if(s.kind==='shock'){ctx.strokeStyle='#ff5365';ctx.lineWidth=8*alpha+2;ctx.shadowBlur=22;ctx.shadowColor='#ff354f';ctx.beginPath();ctx.ellipse(s.x,s.y,35+progress*150,20+progress*70,0,0,Math.PI*2);ctx.stroke();ctx.restore();continue;}ctx.strokeStyle='#fff0b5';ctx.lineWidth=7*alpha+1;ctx.shadowBlur=22;ctx.shadowColor='#ffb15b';ctx.beginPath();ctx.arc(s.x,s.y,30+progress*24,s.dir-1.25+progress*.25,s.dir+1.25-progress*.25);ctx.stroke();ctx.strokeStyle='#8feeff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x,s.y,48,s.dir-1,s.dir+1);ctx.stroke();ctx.restore();}
+for(const p of particles){ctx.globalAlpha=Math.max(0,p.life/p.max);glow(p.x,p.y,p.r,p.color,9);ctx.globalAlpha=1}
+for(const e of embers){ctx.globalAlpha=e.a;ctx.fillStyle=e.h>30?'#ffcf80':'#8ce8ff';ctx.fillRect(e.x,e.y,e.r,e.r*2.3)}ctx.globalAlpha=1;
+if(flash>0){ctx.fillStyle=`rgba(255,50,80,${flash*.45})`;ctx.fillRect(0,0,W,H)}
+ctx.restore();}
+function loop(ts){let dt=Math.min(.032,(ts-last)/1000||0);last=ts;update(dt);draw();requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+function bindHold(id,key){let el=document.getElementById(id);const on=e=>{e.preventDefault();keys[key]=true;el.classList.add('pressed');try{el.setPointerCapture(e.pointerId)}catch(_){}};const off=e=>{if(e)e.preventDefault();keys[key]=false;el.classList.remove('pressed')};el.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave','lostpointercapture'].forEach(t=>el.addEventListener(t,off));}
+// Joystick analogique tactile : direction et intensité selon le déplacement du pouce.
+const joy=document.getElementById('joystick'),joyKnob=document.getElementById('joyKnob');
+let joyPointer=null;
+function resetJoystick(){joyPointer=null;joyKnob.style.left='50%';joyKnob.style.top='50%';keys.up=keys.down=keys.left=keys.right=false;joy.classList.remove('pressed');}
+function moveJoystick(e){const r=joy.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,max=r.width*.34;let dx=e.clientX-cx,dy=e.clientY-cy;const len=Math.hypot(dx,dy);if(len>max){dx=dx/len*max;dy=dy/len*max;}joyKnob.style.left=`calc(50% + ${dx}px)`;joyKnob.style.top=`calc(50% + ${dy}px)`;const nx=dx/max,ny=dy/max;keys.left=nx<-.22;keys.right=nx>.22;keys.up=ny<-.22;keys.down=ny>.22;}
+joy.addEventListener('pointerdown',e=>{e.preventDefault();joyPointer=e.pointerId;joy.classList.add('pressed');try{joy.setPointerCapture(e.pointerId)}catch(_){}moveJoystick(e)});
+joy.addEventListener('pointermove',e=>{if(e.pointerId===joyPointer){e.preventDefault();moveJoystick(e)}});
+['pointerup','pointercancel','lostpointercapture'].forEach(t=>joy.addEventListener(t,resetJoystick));
+document.getElementById('attack').addEventListener('pointerdown',e=>{e.preventDefault();doAttack()});
+document.getElementById('dash').addEventListener('pointerdown',e=>{e.preventDefault();doDash()});
+window.addEventListener('keydown',e=>{let m={ArrowUp:'up',w:'up',ArrowDown:'down',s:'down',ArrowLeft:'left',a:'left',ArrowRight:'right',d:'right'};if(m[e.key]){keys[m[e.key]]=true;e.preventDefault()}if(e.key===' '){doAttack();e.preventDefault()}if(e.key==='Shift')doDash()});
+window.addEventListener('keyup',e=>{let m={ArrowUp:'up',w:'up',ArrowDown:'down',s:'down',ArrowLeft:'left',a:'left',ArrowRight:'right',d:'right'};if(m[e.key])keys[m[e.key]]=false});
+function startGame(e){if(e){e.preventDefault();e.stopPropagation()}if(!document.getElementById('intro').classList.contains('hidden')){reset();document.getElementById('intro').classList.add('hidden');}}
+function restartGame(e){if(e){e.preventDefault();e.stopPropagation()}if(!document.getElementById('end').classList.contains('hidden')){if(adventureMode&&advStarted){if(advWon){advReset(Math.min(99,advLevel+1));}else{advReset(advLevel);}return;}reset();document.getElementById('end').classList.add('hidden');}}
+document.getElementById('tiltToggle').addEventListener('click',toggleTilt);
+document.getElementById('onlineToggle').addEventListener('click',()=>{document.getElementById('onlinePanel').style.display='block';});
+document.getElementById('onlineClose').addEventListener('click',()=>{document.getElementById('onlinePanel').style.display='none';});
+const startButton=document.getElementById('start'), restartButton=document.getElementById('restart');
+startButton.addEventListener('click',startGame);
+restartButton.addEventListener('click',restartGame);
+document.getElementById('musicToggle').addEventListener('click',()=>{musicEnabled=!musicEnabled;document.getElementById('musicToggle').textContent=musicEnabled?'♫ MUSIQUE : ON':'♫ MUSIQUE : OFF';if(musicEnabled)startMusic();else stopMusic();});
+document.getElementById('advBegin').addEventListener('click',()=>{startMusic();try{if('speechSynthesis' in window){window.speechSynthesis.cancel();const unlock=new SpeechSynthesisUtterance('');unlock.lang='fr-FR';unlock.volume=0;window.speechSynthesis.speak(unlock);}}catch(e){}advReset(1);});
+document.getElementById('gearToggle').addEventListener('click',()=>{gearOpen=!gearOpen;updateGearUI();});
+ document.getElementById('upgradeArmorBtn').addEventListener('click',buyArmorUpgrade);
+reset();active=false;document.querySelector('.controls').style.display='none';document.getElementById('gearToggle').style.display='none';
+})();
+</script>
+</body>
+</html>
